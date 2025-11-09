@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     {"icon": "assets/Icon/facebook.png", "url": "https://facebook.com"},
     {
       "icon": "assets/Icon/whassapp.png",
-      "url": "https://wa.me/yourphonenumber"
+      "url": "https://wa.me/yourphonenumber",
     },
     {"icon": "assets/Icon/instagram.png", "url": "https://instagram.com"},
     {"icon": "assets/Icon/facebook.png", "url": "https://tusitioweb.com"},
@@ -83,8 +83,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         debugPrint("🔊 Volumen configurado: $_volume");
 
         setState(() {
-          _statusMessage =
-              _usingBackupStream ? '¡Modo prueba activado!' : '¡Radio lista!';
+          _statusMessage = _usingBackupStream
+              ? '¡Modo prueba activado!'
+              : '¡Radio lista!';
         });
 
         if (_usingBackupStream) {}
@@ -110,25 +111,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         title: "97.16 FM",
         artist: "En Vivo",
         artUri: Uri.parse(
-            'android.resource://com.example.radio_app/drawable/radio_notification'),
+          'android.resource://com.example.radio_chacaltaya/drawable/radio_notification',
+        ),
         displayTitle: "Radio Chacaltaya 97.16 FM",
         displaySubtitle: "97.16 FM - En Vivo",
         displayDescription: "Transmitiendo desde La Paz, Bolivia",
       );
 
       await _player
-          .setAudioSource(
-        AudioSource.uri(
-          Uri.parse(url),
-          tag: mediaItem,
-        ),
-      )
+          .setAudioSource(AudioSource.uri(Uri.parse(url), tag: mediaItem))
           .timeout(
-        const Duration(seconds: 15),
-        onTimeout: () {
-          throw Exception('Timeout al conectar');
-        },
-      );
+            const Duration(seconds: 15),
+            onTimeout: () {
+              throw Exception('Timeout al conectar');
+            },
+          );
 
       debugPrint("✅ Stream cargado exitosamente: $url");
       return true;
@@ -248,11 +245,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
             boxShadow: const [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 20,
-                spreadRadius: 5,
-              ),
+              BoxShadow(color: Colors.black26, blurRadius: 20, spreadRadius: 5),
             ],
           ),
           child: Column(
@@ -279,10 +272,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               const SizedBox(height: 8),
               Text(
                 'Esto puede tardar unos segundos...',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 13,
-                ),
+                style: TextStyle(color: Colors.grey[600], fontSize: 13),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -447,7 +437,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         final isPlaying = snapshot.data?.playing ?? false;
         final processingState =
             snapshot.data?.processingState ?? ProcessingState.idle;
-        final isLoading = processingState == ProcessingState.loading ||
+        final isLoading =
+            processingState == ProcessingState.loading ||
             processingState == ProcessingState.buffering;
 
         return Row(
@@ -466,8 +457,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 ],
               ),
               child: IconButton(
-                icon: const Icon(Icons.refresh_rounded,
-                    size: 28, color: Color(0xFFFFB700)),
+                icon: const Icon(
+                  Icons.refresh_rounded,
+                  size: 28,
+                  color: Color(0xFFFFB700),
+                ),
                 onPressed: () {
                   _initAudioPlayer();
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -487,10 +481,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFFFB700),
-                    Color(0xFFFF8C00),
-                  ],
+                  colors: [Color(0xFFFFB700), Color(0xFFFF8C00)],
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -564,7 +555,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
-                                  '¡Gracias por compartir nuestra app! 🎵'),
+                                '¡Gracias por compartir nuestra app! 🎵',
+                              ),
                               backgroundColor: Color(0xFFFFB700),
                             ),
                           );
@@ -577,7 +569,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                                'No se pudo abrir el enlace para compartir'),
+                              'No se pudo abrir el enlace para compartir',
+                            ),
                             backgroundColor: Colors.red,
                           ),
                         );

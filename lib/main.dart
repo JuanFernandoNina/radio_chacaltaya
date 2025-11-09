@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:radio_app/screens/EventsScreen.dart';
-import 'package:radio_app/screens/MembersScreen.dart';
-import 'package:radio_app/screens/MusicScreen.dart';
-import 'package:radio_app/screens/home_screen.dart';
+import 'package:radio_chacaltaya/screens/EventsScreen.dart';
+import 'package:radio_chacaltaya/screens/MembersScreen.dart';
+import 'package:radio_chacaltaya/screens/MusicScreen.dart';
+import 'package:radio_chacaltaya/screens/home_screen.dart';
 import 'providers/content_provider.dart';
 import 'providers/category_provider.dart';
 import 'providers/carousel_provider.dart';
@@ -17,15 +17,15 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // ✅ Inicializar JustAudioBackground para reproducción en segundo plano
-await JustAudioBackground.init(
-  androidNotificationChannelId: 'com.example.radio_app.channel.audio',
-  androidNotificationChannelName: 'Radio Chacaltaya Audio',
-  androidNotificationOngoing: true,
-  androidStopForegroundOnPause: true,
-  androidNotificationClickStartsActivity: true,
-  androidNotificationIcon: 'mipmap/ic_launcher',
-  notificationColor: const Color(0xFFFFB700),                                                         
-);
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.example.radio_chacaltaya.channel.audio',
+    androidNotificationChannelName: 'Radio Chacaltaya Audio',
+    androidNotificationOngoing: true,
+    androidStopForegroundOnPause: true,
+    androidNotificationClickStartsActivity: true,
+    androidNotificationIcon: 'mipmap/ic_launcher',
+    notificationColor: const Color(0xFFFFB700),
+  );
   // ✅ Inicializar localización en español
   await initializeDateFormatting('es', null);
 
@@ -84,8 +84,9 @@ class _MyAppState extends State<MyApp> {
           fontFamily: 'Montserrat',
         ),
         debugShowCheckedModeBanner: false,
-        home:
-            _isSupabaseInitialized ? const MainScreen() : const _SplashScreen(),
+        home: _isSupabaseInitialized
+            ? const MainScreen()
+            : const _SplashScreen(),
         //  routes: {
         //    '/admin-login': (context) => const AdminLoginScreen(),
         //  },
@@ -116,11 +117,7 @@ class _SplashScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.radio,
-                size: 100,
-                color: Colors.white,
-              ),
+              const Icon(Icons.radio, size: 100, color: Colors.white),
               const SizedBox(height: 24),
               const Text(
                 'Radio Chacaltaya',
@@ -138,10 +135,7 @@ class _SplashScreen extends StatelessWidget {
               const SizedBox(height: 16),
               const Text(
                 'Cargando...',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Colors.white70, fontSize: 16),
               ),
             ],
           ),

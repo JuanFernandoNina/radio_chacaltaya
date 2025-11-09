@@ -1,6 +1,6 @@
 {
-    "name": "radio_app",
-    "short_name": "radio_app",
+    "name": "radio_chacaltaya",
+    "short_name": "radio_chacaltaya",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
