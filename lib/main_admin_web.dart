@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
+import 'firebase_options.dart';
 import 'providers/content_provider.dart';
 import 'providers/category_provider.dart';
 import 'providers/carousel_provider.dart';
-import 'services/supabase_service.dart';
-import 'screens/admin/admin_dashboard_screen.dart';
 import 'providers/event_provider.dart';
+import 'services/firebase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await SupabaseService.initialize(
-    supabaseUrl: 'https://cvzscfcciaegdgnyrkgg.supabase.co',
-    supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2enNjZmNjaWFlZ2Rnbnlya2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3OTQwMjMsImV4cCI6MjA3NjM3MDAyM30.dmAE84YXEtc9667I3b31fehIn_m8-9DIyBGrpppDRMY',
+  // 🔥 Inicializar Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
   );
 
   runApp(const AdminWebApp());
@@ -51,46 +53,47 @@ class AdminWebApp extends StatelessWidget {
   }
 }
 
-class AdminWebHome extends StatefulWidget {
+// ============================================
+// PANTALLA PRINCIPAL - Detecta si hay sesión
+// ============================================
+class AdminWebHome extends StatelessWidget {
   const AdminWebHome({super.key});
 
   @override
-  State<AdminWebHome> createState() => _AdminWebHomeState();
-}
-
-class _AdminWebHomeState extends State<AdminWebHome> {
-  bool _isLoggedIn = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkAuth();
-  }
-
-  void _checkAuth() {
-    final isLogged = SupabaseService.isLoggedIn;
-    setState(() {
-      _isLoggedIn = isLogged;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return _isLoggedIn 
-        ? AdminDashboardScreen() 
-        : const AdminWebLoginScreen();
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        // Esperando conexión
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        // Usuario autenticado → Dashboard
+        if (snapshot.hasData && snapshot.data != null) {
+          return const AdminDashboard();
+        }
+
+        // Sin autenticar → Login
+        return const AdminLoginScreen();
+      },
+    );
   }
 }
 
-// Pantalla de login optimizada para web
-class AdminWebLoginScreen extends StatefulWidget {
-  const AdminWebLoginScreen({super.key});
+// ============================================
+// PANTALLA DE LOGIN
+// ============================================
+class AdminLoginScreen extends StatefulWidget {
+  const AdminLoginScreen({super.key});
 
   @override
-  State<AdminWebLoginScreen> createState() => _AdminWebLoginScreenState();
+  State<AdminLoginScreen> createState() => _AdminLoginScreenState();
 }
 
-class _AdminWebLoginScreenState extends State<AdminWebLoginScreen> {
+class _AdminLoginScreenState extends State<AdminLoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -103,18 +106,11 @@ class _AdminWebLoginScreenState extends State<AdminWebLoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await SupabaseService.signInWithEmail(
+      await FirebaseService.signInWithEmail(
         _emailController.text.trim(),
         _passwordController.text,
       );
-
-      if (mounted) {
-        // Recargar la página para mostrar el dashboard
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
-        );
-      }
+      // No necesitas Navigator, StreamBuilder lo maneja automáticamente
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -159,7 +155,7 @@ class _AdminWebLoginScreenState extends State<AdminWebLoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Logo o ícono
+                    // Logo
                     Icon(
                       Icons.radio,
                       size: 80,
@@ -178,7 +174,7 @@ class _AdminWebLoginScreenState extends State<AdminWebLoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Radio App',
+                      'Radio Chacaltaya',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,
@@ -273,7 +269,7 @@ class _AdminWebLoginScreenState extends State<AdminWebLoginScreen> {
                     
                     const SizedBox(height: 24),
                     
-                    // Información adicional
+                    // Info
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -301,6 +297,140 @@ class _AdminWebLoginScreenState extends State<AdminWebLoginScreen> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================
+// DASHBOARD ADMIN - Panel principal
+// ============================================
+class AdminDashboard extends StatelessWidget {
+  const AdminDashboard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('🎵 Panel de Administración - Radio Chacaltaya'),
+        elevation: 2,
+        actions: [
+          // Email del usuario
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Center(
+              child: Text(
+                FirebaseAuth.instance.currentUser?.email ?? '',
+                style: const TextStyle(fontSize: 14),
+              ),
+            ),
+          ),
+          // Botón logout
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Cerrar Sesión',
+            onPressed: () async {
+              await FirebaseService.signOut();
+              // StreamBuilder en AdminWebHome lo detecta automáticamente
+            },
+          ),
+        ],
+      ),
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.construction,
+                size: 100,
+                color: Colors.orange,
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Dashboard en Construcción',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Panel de administración próximamente disponible',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 48),
+              
+              // Estadísticas de ejemplo
+              Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                alignment: WrapAlignment.center,
+                children: [
+                  _buildStatCard(
+                    context,
+                    '📻 Contenido',
+                    '0 items',
+                    Colors.blue,
+                  ),
+                  _buildStatCard(
+                    context,
+                    '🏷️ Categorías',
+                    '0 items',
+                    Colors.green,
+                  ),
+                  _buildStatCard(
+                    context,
+                    '🎠 Carrusel',
+                    '0 items',
+                    Colors.purple,
+                  ),
+                  _buildStatCard(
+                    context,
+                    '📅 Eventos',
+                    '0 items',
+                    Colors.orange,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard(BuildContext context, String title, String value, Color color) {
+    return Card(
+      elevation: 2,
+      child: Container(
+        width: 180,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
         ),
       ),
     );

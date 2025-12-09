@@ -15,7 +15,9 @@ class _EventsScreenState extends State<EventsScreen> {
   @override
   void initState() {
     super.initState();
+    // Cargar eventos al iniciar
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      print('🔄 EventsScreen: Iniciando carga de eventos...');
       context.read<EventProvider>().loadAll();
     });
   }
@@ -30,20 +32,23 @@ class _EventsScreenState extends State<EventsScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           color: Colors.amber[700],
-          onRefresh: () => context.read<EventProvider>().refresh(),
+          onRefresh: () async {
+            print('🔄 EventsScreen: Refrescando eventos...');
+            await context.read<EventProvider>().refresh();
+          },
           child: CustomScrollView(
             slivers: [
               // Header moderno
               SliverToBoxAdapter(
                 child: Container(
                   padding: EdgeInsets.all(isTablet ? 32 : 20),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        const Color.fromARGB(255, 255, 255, 255),
-                        const Color.fromARGB(255, 255, 255, 255),
+                        Color.fromARGB(255, 255, 255, 255),
+                        Color.fromARGB(255, 255, 255, 255),
                       ],
                     ),
                   ),
@@ -137,16 +142,78 @@ class _EventsScreenState extends State<EventsScreen> {
                 ),
               ),
 
-              // Lista de eventos
+              // Lista de eventos (CON DEBUGGING)
               Consumer<EventProvider>(
                 builder: (context, provider, child) {
+                  print('📊 EventsScreen Consumer Build:');
+                  print('   - isLoading: ${provider.isLoading}');
+                  print('   - Total events: ${provider.events.length}');
+                  print('   - Selected date: ${provider.selectedDate}');
+                  print(
+                      '   - Events for selected date: ${provider.eventsForSelectedDate.length}');
+                  print('   - Error: ${provider.error}');
+
                   final events = provider.eventsForSelectedDate;
+
+                  // Mostrar error si existe
+                  if (provider.error != null) {
+                    return SliverFillRemaining(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error_outline,
+                                size: 64, color: Colors.red[300]),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Error al cargar eventos',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[800],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 40),
+                              child: Text(
+                                provider.error!,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              onPressed: () => provider.refresh(),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Reintentar'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.amber[600],
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
 
                   if (provider.isLoading) {
                     return const SliverFillRemaining(
                       child: Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.amber,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(
+                              color: Colors.amber,
+                            ),
+                            SizedBox(height: 16),
+                            Text('Cargando eventos...'),
+                          ],
                         ),
                       ),
                     );
@@ -187,12 +254,21 @@ class _EventsScreenState extends State<EventsScreen> {
                                 color: Colors.grey[500],
                               ),
                             ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Fecha seleccionada: ${DateFormat('dd/MM/yyyy').format(provider.selectedDate)}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[400],
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     );
                   }
 
+                  // Mostrar eventos
                   return SliverPadding(
                     padding: EdgeInsets.symmetric(
                       horizontal: isTablet ? 32 : 20,
@@ -201,6 +277,8 @@ class _EventsScreenState extends State<EventsScreen> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final event = events[index];
+                          print(
+                              '📅 Mostrando evento: ${event.title} - ${event.eventDate}');
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: EventCard(event: event, isTablet: isTablet),
@@ -246,9 +324,10 @@ class _EventsScreenState extends State<EventsScreen> {
                 ),
               ),
 
-              // Lista de recordatorios
+              // Lista de recordatorios (CON DEBUGGING)
               Consumer<EventProvider>(
                 builder: (context, provider, child) {
+                  print('🔔 Recordatorios: ${provider.reminders.length}');
                   final reminders = provider.reminders;
 
                   if (reminders.isEmpty) {
@@ -351,7 +430,11 @@ class WeekDaySelector extends StatelessWidget {
               final hasEvents = provider.hasEventsOnDate(date);
 
               return GestureDetector(
-                onTap: () => provider.selectDate(date),
+                onTap: () {
+                  print(
+                      '📅 Seleccionado: ${DateFormat('dd/MM/yyyy').format(date)}');
+                  provider.selectDate(date);
+                },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   width: isTablet ? 70 : 60,

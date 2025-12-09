@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/radio_content.dart';
-import '../services/supabase_service.dart';
+import '../services/firebase_service.dart'; // 🔥 Cambio aquí
 
 class ContentProvider extends ChangeNotifier {
   List<RadioContent> _contents = [];
@@ -18,7 +18,7 @@ class ContentProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _contents = await SupabaseService.getActiveContent();
+      _contents = await FirebaseService.getActiveContent(); // 🔥 Cambio aquí
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -34,7 +34,7 @@ class ContentProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _contents = await SupabaseService.getAllContent();
+      _contents = await FirebaseService.getAllContent(); // 🔥 Cambio aquí
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -46,7 +46,7 @@ class ContentProvider extends ChangeNotifier {
   // Crear contenido
   Future<bool> createContent(RadioContent content) async {
     try {
-      final newContent = await SupabaseService.createContent(content);
+      final newContent = await FirebaseService.createContent(content); // 🔥 Cambio aquí
       _contents.insert(0, newContent);
       notifyListeners();
       return true;
@@ -60,7 +60,7 @@ class ContentProvider extends ChangeNotifier {
   // Actualizar contenido
   Future<bool> updateContent(String id, RadioContent content) async {
     try {
-      final updatedContent = await SupabaseService.updateContent(id, content);
+      final updatedContent = await FirebaseService.updateContent(id, content); // 🔥 Cambio aquí
       final index = _contents.indexWhere((c) => c.id == id);
       if (index != -1) {
         _contents[index] = updatedContent;
@@ -77,7 +77,7 @@ class ContentProvider extends ChangeNotifier {
   // Eliminar contenido
   Future<bool> deleteContent(String id) async {
     try {
-      await SupabaseService.deleteContent(id);
+      await FirebaseService.deleteContent(id); // 🔥 Cambio aquí
       _contents.removeWhere((c) => c.id == id);
       notifyListeners();
       return true;

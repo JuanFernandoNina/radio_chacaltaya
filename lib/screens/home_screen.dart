@@ -14,12 +14,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   static const _primaryColor = Color.fromARGB(255, 255, 166, 0);
   static const _streamUrl = "https://stream.zeno.fm/rihjsl5lkhmuv";
   static const _backupStreamUrl = "https://icecast.radiofrance.fr/fip-hifi.aac";
-  // static const _radioLogo = "assets/img/img-radio.png";
-  // ✅ URL alternativa si la primera falla
   static const _appShareUrl =
-      "https://play.google.com/store/apps/details?id=com.radiochacaltaya.app"; // Reemplaza con tu URL real
-  // static const _appShareMessage =
-  //    "¡Escucha Radio Chacaltaya 97.16 FM en vivo! Descarga la app oficial:";
+      "https://play.google.com/store/apps/details?id=com.radiochacaltaya.app";
 
   late final AudioPlayer _player;
 
@@ -32,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     {"icon": "assets/Icon/facebook.png", "url": "https://facebook.com"},
     {
       "icon": "assets/Icon/whassapp.png",
-      "url": "https://wa.me/yourphonenumber",
+      "url": "https://wa.me/yourphonenumber"
     },
     {"icon": "assets/Icon/instagram.png", "url": "https://instagram.com"},
     {"icon": "assets/Icon/facebook.png", "url": "https://tusitioweb.com"},
@@ -51,7 +47,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // ✅ El audio continuará reproduciéndose en segundo plano
     debugPrint('📱 App lifecycle state: $state');
   }
 
@@ -66,8 +61,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     String urlToTry = _streamUrl;
     bool success = await _tryLoadStream(urlToTry);
 
+    if (!mounted) return;
+
     if (!success) {
       debugPrint("⚠️ Stream principal falló, intentando respaldo...");
+      if (!mounted) return;
       setState(() {
         _statusMessage = 'Probando conexión alternativa...';
         _usingBackupStream = true;
@@ -77,28 +75,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       success = await _tryLoadStream(urlToTry);
     }
 
-    if (mounted) {
-      if (success) {
-        await _player.setVolume(_volume);
-        debugPrint("🔊 Volumen configurado: $_volume");
+    if (!mounted) return;
 
-        setState(() {
-          _statusMessage = _usingBackupStream
-              ? '¡Modo prueba activado!'
-              : '¡Radio lista!';
-        });
+    if (success) {
+      await _player.setVolume(_volume);
+      debugPrint("🔊 Volumen configurado: $_volume");
 
-        if (_usingBackupStream) {}
-      } else {
-        setState(() {
-          _statusMessage = 'Error de conexión';
-        });
-        _showErrorDialog();
-      }
-
-      await Future.delayed(const Duration(milliseconds: 500));
-      setState(() => _isInitializing = false);
+      if (!mounted) return;
+      setState(() {
+        _statusMessage =
+            _usingBackupStream ? '¡Modo prueba activado!' : '¡Radio lista!';
+      });
+    } else {
+      if (!mounted) return;
+      setState(() {
+        _statusMessage = 'Error de conexión';
+      });
+      _showErrorDialog();
     }
+
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (!mounted) return;
+    setState(() => _isInitializing = false);
   }
 
   Future<bool> _tryLoadStream(String url) async {
@@ -121,11 +120,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       await _player
           .setAudioSource(AudioSource.uri(Uri.parse(url), tag: mediaItem))
           .timeout(
-            const Duration(seconds: 15),
-            onTimeout: () {
-              throw Exception('Timeout al conectar');
-            },
-          );
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Timeout al conectar');
+        },
+      );
 
       debugPrint("✅ Stream cargado exitosamente: $url");
       return true;
@@ -344,7 +343,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             ),
             children: <TextSpan>[
               TextSpan(
-                text: 'JUAN NINA',
+                text: 'Nombre',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,
@@ -437,8 +436,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         final isPlaying = snapshot.data?.playing ?? false;
         final processingState =
             snapshot.data?.processingState ?? ProcessingState.idle;
-        final isLoading =
-            processingState == ProcessingState.loading ||
+        final isLoading = processingState == ProcessingState.loading ||
             processingState == ProcessingState.buffering;
 
         return Row(
@@ -555,8 +553,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
-                                '¡Gracias por compartir nuestra app! 🎵',
-                              ),
+                                  '¡Gracias por compartir nuestra app! 🎵'),
                               backgroundColor: Color(0xFFFFB700),
                             ),
                           );
@@ -569,17 +566,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                              'No se pudo abrir el enlace para compartir',
-                            ),
+                                'No se pudo abrir el enlace para compartir'),
                             backgroundColor: Colors.red,
                           ),
                         );
                       }
                     }
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: const Icon(
+                  child: const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: Icon(
                       Icons.share_rounded,
                       size: 28,
                       color: Color(0xFFFFB700),

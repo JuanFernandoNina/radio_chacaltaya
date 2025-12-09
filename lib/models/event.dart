@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Event {
   final String id;
   final String title;
@@ -25,7 +27,44 @@ class Event {
     this.updatedAt,
   });
 
-  // Desde JSON (Supabase)
+  // 🔥 Desde Firestore (Firebase)
+  factory Event.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Event(
+      id: doc.id,
+      title: data['title'] as String,
+      description: data['description'] as String?,
+      eventDate: (data['eventDate'] as Timestamp).toDate(),
+      startTime: data['startTime'] as String?,
+      endTime: data['endTime'] as String?,
+      imageUrl: data['imageUrl'] as String?,
+      isReminder: data['isReminder'] as bool? ?? false,
+      isActive: data['isActive'] as bool? ?? true,
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      updatedAt: data['updatedAt'] != null 
+          ? (data['updatedAt'] as Timestamp).toDate()
+          : null,
+    );
+  }
+
+  // 🔥 A Firestore (para crear/actualizar)
+  Map<String, dynamic> toFirestore() {
+    return {
+      'title': title,
+      'description': description,
+      'eventDate': Timestamp.fromDate(eventDate),
+      'startTime': startTime,
+      'endTime': endTime,
+      'imageUrl': imageUrl,
+      'isReminder': isReminder,
+      'isActive': isActive,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+  }
+
+  // ⚠️ DEPRECATED: Mantener para compatibilidad con código antiguo
+  // TODO: Eliminar cuando todo use Firebase
   factory Event.fromJson(Map<String, dynamic> json) {
     return Event(
       id: json['id'] as String,
@@ -44,12 +83,12 @@ class Event {
     );
   }
 
-  // A JSON (para Supabase)
+  // ⚠️ DEPRECATED: Mantener para compatibilidad
   Map<String, dynamic> toJson() {
     return {
       'title': title,
       'description': description,
-      'event_date': eventDate.toIso8601String().split('T')[0], // Solo fecha
+      'event_date': eventDate.toIso8601String().split('T')[0],
       'start_time': startTime,
       'end_time': endTime,
       'image_url': imageUrl,
@@ -58,7 +97,10 @@ class Event {
     };
   }
 
-  // Helpers útiles
+  // ============================================
+  // HELPERS ÚTILES
+  // ============================================
+  
   String get timeRange {
     if (startTime != null && endTime != null) {
       return '$startTime - $endTime';
@@ -80,6 +122,25 @@ class Event {
     return eventDate.year == tomorrow.year &&
            eventDate.month == tomorrow.month &&
            eventDate.day == tomorrow.day;
+  }
+
+  bool get isPast {
+    final now = DateTime.now();
+    final eventDateTime = DateTime(
+      eventDate.year,
+      eventDate.month,
+      eventDate.day,
+      startTime != null ? int.parse(startTime!.split(':')[0]) : 0,
+      startTime != null ? int.parse(startTime!.split(':')[1]) : 0,
+    );
+    return eventDateTime.isBefore(now);
+  }
+
+  int get daysUntilEvent {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final eventDay = DateTime(eventDate.year, eventDate.month, eventDate.day);
+    return eventDay.difference(today).inDays;
   }
 
   Event copyWith({
@@ -109,4 +170,18 @@ class Event {
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
+
+  @override
+  String toString() {
+    return 'Event(id: $id, title: $title, date: $eventDate, time: $timeRange)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Event && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
 }

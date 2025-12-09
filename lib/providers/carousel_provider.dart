@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/carousel_item.dart';
-import '../services/supabase_service.dart';
+import '../services/firebase_service.dart'; // 🔥 Cambio aquí
 
 class CarouselProvider extends ChangeNotifier {
   List<CarouselItem> _items = [];
@@ -16,7 +16,7 @@ class CarouselProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      _items = await SupabaseService.getActiveCarousel();
+      _items = await FirebaseService.getActiveCarousel(); // 🔥 Cambio aquí
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -30,7 +30,7 @@ class CarouselProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      _items = await SupabaseService.getAllCarousel();
+      _items = await FirebaseService.getAllCarousel(); // 🔥 Cambio aquí
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -41,7 +41,7 @@ class CarouselProvider extends ChangeNotifier {
 
   Future<bool> createCarousel(CarouselItem item) async {
     try {
-      final created = await SupabaseService.createCarousel(item);
+      final created = await FirebaseService.createCarousel(item); // 🔥 Cambio aquí
       _items.add(created);
       _items.sort((a, b) => a.orderPosition.compareTo(b.orderPosition));
       notifyListeners();
@@ -55,7 +55,7 @@ class CarouselProvider extends ChangeNotifier {
 
   Future<bool> updateCarousel(String id, CarouselItem item) async {
     try {
-      final updated = await SupabaseService.updateCarousel(id, item);
+      final updated = await FirebaseService.updateCarousel(id, item); // 🔥 Cambio aquí
       final idx = _items.indexWhere((i) => i.id == id);
       if (idx != -1) _items[idx] = updated;
       notifyListeners();
@@ -69,7 +69,7 @@ class CarouselProvider extends ChangeNotifier {
 
   Future<bool> deleteCarousel(String id) async {
     try {
-      await SupabaseService.deleteCarousel(id);
+      await FirebaseService.deleteCarousel(id); // 🔥 Cambio aquí
       _items.removeWhere((i) => i.id == id);
       notifyListeners();
       return true;

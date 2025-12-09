@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Category {
   final String id;
   final String name;
@@ -15,23 +17,25 @@ class Category {
     required this.createdAt,
   });
 
-  factory Category.fromJson(Map<String, dynamic> json) {
+  factory Category.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
     return Category(
-      id: json['id'],
-      name: json['name'],
-      icon: json['icon'],
-      color: json['color'],
-      screen: json['screen'] ?? 'home',
-      createdAt: DateTime.parse(json['created_at']),
+      id: doc.id,
+      name: data['name'] ?? '',
+      icon: data['icon'],
+      color: data['color'],
+      screen: data['screen'] ?? 'home',
+      createdAt: (data['created_at'] as Timestamp).toDate(),
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toFirestore() {
     return {
       'name': name,
       'icon': icon,
       'color': color,
       'screen': screen,
+      'created_at': Timestamp.fromDate(createdAt),
     };
   }
 }

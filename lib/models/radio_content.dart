@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class RadioContent {
   final String id;
   final String title;
@@ -8,7 +10,7 @@ class RadioContent {
   final bool isActive;
   final String? categoryId;
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   RadioContent({
     required this.id,
@@ -20,25 +22,28 @@ class RadioContent {
     this.isActive = true,
     this.categoryId,
     required this.createdAt,
-    required this.updatedAt,
+    this.updatedAt,
   });
 
-  factory RadioContent.fromJson(Map<String, dynamic> json) {
+  factory RadioContent.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
     return RadioContent(
-      id: json['id'],
-      title: json['title'],
-      description: json['description'],
-      videoUrl: json['video_url'],
-      audioUrl: json['audio_url'],
-      thumbnailUrl: json['thumbnail_url'],
-      isActive: json['is_active'] ?? true,
-      categoryId: json['category_id'],
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
+      id: doc.id,
+      title: data['title'] ?? '',
+      description: data['description'],
+      videoUrl: data['video_url'],
+      audioUrl: data['audio_url'],
+      thumbnailUrl: data['thumbnail_url'],
+      isActive: data['is_active'] ?? true,
+      categoryId: data['category_id'],
+      createdAt: (data['created_at'] as Timestamp).toDate(),
+      updatedAt: data['updated_at'] != null
+          ? (data['updated_at'] as Timestamp).toDate()
+          : null,
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toFirestore() {
     return {
       'title': title,
       'description': description,
@@ -47,32 +52,8 @@ class RadioContent {
       'thumbnail_url': thumbnailUrl,
       'is_active': isActive,
       'category_id': categoryId,
+      'created_at': Timestamp.fromDate(createdAt),
+      'updated_at': FieldValue.serverTimestamp(),
     };
-  }
-
-  RadioContent copyWith({
-    String? id,
-    String? title,
-    String? description,
-    String? videoUrl,
-    String? audioUrl,
-    String? thumbnailUrl,
-    bool? isActive,
-    String? categoryId,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) {
-    return RadioContent(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      videoUrl: videoUrl ?? this.videoUrl,
-      audioUrl: audioUrl ?? this.audioUrl,
-      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
-      isActive: isActive ?? this.isActive,
-      categoryId: categoryId ?? this.categoryId,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
   }
 }

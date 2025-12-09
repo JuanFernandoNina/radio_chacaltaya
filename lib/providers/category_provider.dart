@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/category.dart';
-import '../services/supabase_service.dart';
+import '../services/firebase_service.dart'; // 🔥 Cambio aquí
 
 class CategoryProvider extends ChangeNotifier {
   List<Category> _categories = [];
@@ -17,7 +17,7 @@ class CategoryProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _categories = await SupabaseService.getCategories();
+      _categories = await FirebaseService.getCategories(); // 🔥 Cambio aquí
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -28,7 +28,7 @@ class CategoryProvider extends ChangeNotifier {
 
   Future<bool> createCategory(Category category) async {
     try {
-      final newCategory = await SupabaseService.createCategory(category);
+      final newCategory = await FirebaseService.createCategory(category); // 🔥 Cambio aquí
       _categories.add(newCategory);
       _categories.sort((a, b) => a.name.compareTo(b.name));
       notifyListeners();
@@ -42,7 +42,7 @@ class CategoryProvider extends ChangeNotifier {
 
   Future<bool> deleteCategory(String id) async {
     try {
-      await SupabaseService.deleteCategory(id);
+      await FirebaseService.deleteCategory(id); // 🔥 Cambio aquí
       _categories.removeWhere((c) => c.id == id);
       notifyListeners();
       return true;

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class CarouselItem {
   final String id;
   final String title;
@@ -7,7 +9,7 @@ class CarouselItem {
   final bool isActive;
   final int orderPosition;
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   CarouselItem({
     required this.id,
@@ -18,24 +20,27 @@ class CarouselItem {
     this.isActive = true,
     this.orderPosition = 0,
     required this.createdAt,
-    required this.updatedAt,
+    this.updatedAt,
   });
 
-  factory CarouselItem.fromJson(Map<String, dynamic> json) {
+  factory CarouselItem.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
     return CarouselItem(
-      id: json['id'],
-      title: json['title'],
-      description: json['description'],
-      imageUrl: json['image_url'],
-      linkUrl: json['link_url'],
-      isActive: json['is_active'] ?? true,
-      orderPosition: json['order_position'] ?? 0,
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
+      id: doc.id,
+      title: data['title'] ?? '',
+      description: data['description'],
+      imageUrl: data['image_url'] ?? '',
+      linkUrl: data['link_url'],
+      isActive: data['is_active'] ?? true,
+      orderPosition: data['order_position'] ?? 0,
+      createdAt: (data['created_at'] as Timestamp).toDate(),
+      updatedAt: data['updated_at'] != null
+          ? (data['updated_at'] as Timestamp).toDate()
+          : null,
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toFirestore() {
     return {
       'title': title,
       'description': description,
@@ -43,30 +48,8 @@ class CarouselItem {
       'link_url': linkUrl,
       'is_active': isActive,
       'order_position': orderPosition,
+      'created_at': Timestamp.fromDate(createdAt),
+      'updated_at': FieldValue.serverTimestamp(),
     };
-  }
-
-  CarouselItem copyWith({
-    String? id,
-    String? title,
-    String? description,
-    String? imageUrl,
-    String? linkUrl,
-    bool? isActive,
-    int? orderPosition,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) {
-    return CarouselItem(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      imageUrl: imageUrl ?? this.imageUrl,
-      linkUrl: linkUrl ?? this.linkUrl,
-      isActive: isActive ?? this.isActive,
-      orderPosition: orderPosition ?? this.orderPosition,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
   }
 }
