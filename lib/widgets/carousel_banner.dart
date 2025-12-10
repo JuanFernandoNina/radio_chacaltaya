@@ -316,38 +316,38 @@ class _CarouselBannerState extends State<CarouselBanner> {
                           ],
 
                           // Botón de acción
-                          if (isActive && item.linkUrl != null) ...[
-                            const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: _kAccent,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    'Ver más',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(width: 4),
-                                  Icon(
-                                    Icons.arrow_forward,
-                                    size: 16,
-                                    color: Colors.black,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                          // if (isActive && item.linkUrl != null) ...[
+                          //   const SizedBox(height: 12),
+                          //   Container(
+                          //     padding: const EdgeInsets.symmetric(
+                          //       horizontal: 16,
+                          //       vertical: 8,
+                          //     ),
+                          //     decoration: BoxDecoration(
+                          //       color: _kAccent,
+                          //       borderRadius: BorderRadius.circular(20),
+                          //     ),
+                          //     //child: const Row(
+                          //     //  mainAxisSize: MainAxisSize.min,
+                          //     //  children: [
+                          //     //    Text(
+                          //     //      'Ver más',
+                          //     //      style: TextStyle(
+                          //     //        color: Colors.black,
+                          //     //        fontSize: 13,
+                          //     //        fontWeight: FontWeight.bold,
+                          //     //      ),
+                          //     //    ),
+                          //     //    SizedBox(width: 4),
+                          //     //    Icon(
+                          //     //      Icons.arrow_forward,
+                          //     //      size: 16,
+                          //     //      color: Colors.black,
+                          //     //    ),
+                          //     //  ],
+                          //     //),
+                          //   ),
+                          // ],
                         ],
                       ),
                     ),
